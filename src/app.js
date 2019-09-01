@@ -1,6 +1,8 @@
 const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 
 const app = express();
 
@@ -17,13 +19,81 @@ hbs.registerPartials(partialsPath);
 //Setup static directory to serve
 app.use(express.static(publicDirectoryPath));
 
+//Setup body-parser
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+//Setup MongoDB Atlas
+mongoose.connect("mongodb+srv://admin-matlau:Test123@mattewcylau-5ltcp.mongodb.net/slackifymeDB", {
+    useNewUrlParser: true
+});
+
+//Setup message schema
+const messageSchema = {
+    slackChannel: String,
+    messageBody: String,
+    time: {
+        type: Date,
+        default: Date.now
+    }
+}
+
+const Message = mongoose.model(
+    "Message", messageSchema
+);
+
+//Routing
+
+app.get('', (req, res) => {
+
+    Message.find({}).limit(10).sort({
+        'time': 'desc'
+    }).exec(function (err, foundMessages) {
+
+        if (err) {
+            console.log(err);
+        } else {
+            res.render("index", {
+                messages: foundMessages
+            });
+        }
+
+    });
+});
+
+app.get('/message', (req, res) => {
+    res.render('message');
+})
+
+app.post("/message", function (req, res) {
+
+    const message = new Message({
+
+        slackChannel: "Slackbot Channel",
+        messageBody: req.body.messageBody
+
+    });
+
+    message.save(function (err) {
+
+        if (!err) {
+            console.log("Successfully saved new message")
+            res.redirect("/success");
+        }
+    });
+
+});
+
+app.get('/success', (req, res) => {
+
+    res.render('success')
+
+})
+
 app.get('*', (req, res) => {
 
-    res.render('404', {
-        title: 'Page not found',
-        name: 'Matt',
-        errorMessage: 'Page not found message'
-    })
+    res.render('404')
 
 })
 
