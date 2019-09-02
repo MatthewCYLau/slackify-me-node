@@ -3,6 +3,7 @@ const express = require('express');
 const hbs = require('hbs');
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const sendMessage = require("./utils/message")
 
 const app = express();
 
@@ -47,7 +48,7 @@ const Message = mongoose.model(
 
 app.get('', (req, res) => {
 
-    Message.find({}).limit(10).sort({
+    Message.find({}).limit(5).sort({
         'time': 'desc'
     }).exec(function (err, foundMessages) {
 
@@ -68,21 +69,27 @@ app.get('/message', (req, res) => {
 
 app.post("/message", function (req, res) {
 
-    const message = new Message({
+    const slackChannel = "DE2QP24U8";
+    const messageBody = req.body.messageBody;
 
-        slackChannel: "Slackbot Channel",
-        messageBody: req.body.messageBody
+    sendMessage(slackChannel, messageBody, (err) => {
 
-    });
+        if (err) {
+            console.log(err);
+        } else {
+            const message = new Message({
+                slackChannel,
+                messageBody,
+            });
+            message.save(function (err) {
 
-    message.save(function (err) {
-
-        if (!err) {
-            console.log("Successfully saved new message")
-            res.redirect("/success");
+                if (!err) {
+                    console.log("Successfully saved new message")
+                    res.redirect("/success");
+                }
+            });
         }
-    });
-
+    })
 });
 
 app.get('/success', (req, res) => {
