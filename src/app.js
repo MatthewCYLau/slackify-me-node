@@ -5,6 +5,9 @@ const hbs = require('hbs');
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const sendMessage = require("./utils/message")
+const passport = require("passport");
+const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const app = express();
 
@@ -98,6 +101,10 @@ app.get('/success', (req, res) => {
 
     res.render('success')
 
+})
+
+app.get('/signup', (req, res) => {
+    res.render('signup');
 })
 
 app.get('*', (req, res) => {
