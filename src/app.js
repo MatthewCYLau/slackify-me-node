@@ -1,3 +1,4 @@
+const dotenv = require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
@@ -71,8 +72,9 @@ app.post("/message", function (req, res) {
 
     const slackChannel = "DE2QP24U8";
     const messageBody = req.body.messageBody;
+    const slackAuthToken = process.env.SLACK_AUTH_TOKEN || process.env.AWS_SLACK_AUTH_TOKEN;
 
-    sendMessage(slackChannel, messageBody, (err) => {
+    sendMessage(slackChannel, slackAuthToken, messageBody, (err) => {
 
         if (err) {
             console.log(err);

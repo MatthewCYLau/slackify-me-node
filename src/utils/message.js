@@ -1,9 +1,9 @@
 const request = require("request");
 
-const sendMessage = (slackChannel, messageBody, callback) => {
+const sendMessage = (slackChannel, slackAuthToken, messageBody, callback) => {
 
     const url = "https://slack.com/api/chat.postMessage";
-    const authToken = "xoxp-140168250439-479776639701-670077327843-9d74fa532adb08084c74d11f50a724dc";
+    const authToken = slackAuthToken;
 
     const payload = {
         'channel': slackChannel,
