@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 //Setup MongoDB Atlas
-mongoose.connect("mongodb+srv://admin-matlau:Test123@mattewcylau-5ltcp.mongodb.net/slackifymeDB", {
+mongoose.connect("mongodb+srv://admin-matlau:"+process.env.DB_PASSWORD+"@mattewcylau-5ltcp.mongodb.net/slackifymeDB", {
     useNewUrlParser: true
 });
 
