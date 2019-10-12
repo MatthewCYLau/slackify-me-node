@@ -7,6 +7,11 @@ const messageSchema = {
     time: {
         type: Date,
         default: Date.now
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+        ref: 'User'
     }
 }
 

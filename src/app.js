@@ -1,7 +1,7 @@
 const port = process.env.PORT
-const app = express();
 const path = require('path');
 const express = require('express');
+const app = express();
 const hbs = require('hbs');
 const bodyParser = require("body-parser");
 
@@ -10,6 +10,7 @@ require('./db/mongoose')
 
 //Setup routers
 const messageRouter = require('./routers/message');
+const userRouter = require('./routers/user');
 
 //Setup data models
 const Message = require('./models/message');
@@ -21,6 +22,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.json())
 app.use(messageRouter);
+app.use(userRouter);
 
 //Define paths for Express config
 const publicDirectoryPath = path.join(__dirname, '../public');
@@ -56,10 +58,6 @@ app.get('', (req, res) => {
 
 app.get('/success', (req, res) => {
     res.render('success')
-})
-
-app.get('/signup', (req, res) => {
-    res.render('signup');
 })
 
 app.get('*', (req, res) => {

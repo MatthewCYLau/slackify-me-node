@@ -2,6 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const Message = require('../models/message');
 const sendMessage = require("../utils/message")
+const auth = require('../middleware/auth');
 
 router.get('/message', (req, res) => {
     res.render('message');
@@ -23,6 +24,7 @@ router.post("/message", function (req, res) {
             const message = new Message({
                 slackChannel,
                 messageBody,
+                owner: req.user._id
             });
             message.save(function (err) {
 

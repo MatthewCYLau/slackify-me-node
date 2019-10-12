@@ -180,6 +180,14 @@ p {
 
 }
 
-.form-container {
+.form-container{
+  padding-top: 20px;
+}
+
+.login{
+  padding-top: 20px;
+}
+
+.signup{
   padding-top: 20px;
 }
