@@ -8,9 +8,7 @@ router.get('/message', (req, res) => {
     res.render('message');
 })
 
-router.post("/message", function (req, res) {
-
-    console.log(req.body)
+router.post("/message", auth, function (req, res) {
 
     const slackChannel = "DE2QP24U8";
     const messageBody = req.body.messageBody;
