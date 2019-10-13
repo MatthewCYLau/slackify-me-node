@@ -4,6 +4,10 @@ const express = require('express');
 const app = express();
 const hbs = require('hbs');
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
+
+//Setup cookie parser
+app.use(cookieParser());
 
 //Setup database
 require('./db/mongoose')
@@ -14,15 +18,6 @@ const userRouter = require('./routers/user');
 
 //Setup data models
 const Message = require('./models/message');
-
-//Setup body-parser
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
-
-app.use(express.json())
-app.use(messageRouter);
-app.use(userRouter);
 
 //Define paths for Express config
 const publicDirectoryPath = path.join(__dirname, '../public');
@@ -37,8 +32,16 @@ hbs.registerPartials(partialsPath);
 //Setup static directory to serve
 app.use(express.static(publicDirectoryPath));
 
-//Routing
+//Setup body-parser
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 
+app.use(express.json())
+app.use(messageRouter);
+app.use(userRouter);
+
+//Routing
 app.get('', (req, res) => {
 
     Message.find({}).limit(5).sort({

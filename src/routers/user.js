@@ -2,6 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const Message = require('../models/message');
 
 router.get('/users/signup', async (req, res) => {
     res.render('signup');
@@ -24,6 +25,7 @@ router.post('/users/signup', async (req, res) => {
     try {
         await user.save();
         const token = await user.generateAuthToken();
+        res.cookie('auth_token', token)
         res.status(201).send({
             user,
             token
@@ -38,6 +40,7 @@ router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken();
+        res.cookie('auth_token', token)
         res.send({
             user,
             token
@@ -72,5 +75,16 @@ router.post('/users/logoutAll', auth, async (req, res) => {
         res.statue(500).send();
     }
 })
+
+router.get('/users/welcome', auth, async (req, res) => {
+
+    try {
+        const messages = await Message.find({owner: req.user._id})
+        res.send(messages)
+    } catch (e) {
+        res.status(500).send();
+    }
+})
+
 
 module.exports = router;
