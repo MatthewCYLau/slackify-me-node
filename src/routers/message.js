@@ -3,15 +3,18 @@ const router = new express.Router();
 const Message = require('../models/message');
 const sendMessage = require("../utils/message")
 const auth = require('../middleware/auth');
+const translate = require('moji-translate');
 
-router.get('/message', (req, res) => {
-    res.render('message');
+router.get('/message', auth, (req, res) => {
+    res.render('message', {
+        user: req.user
+    });
 })
 
 router.post("/message", auth, function (req, res) {
 
     const slackChannel = "DE2QP24U8";
-    const messageBody = req.body.messageBody;
+    const messageBody = translate.translate(req.body.messageBody)
     const slackAuthToken = process.env.SLACK_AUTH_TOKEN;
 
     sendMessage(slackChannel, slackAuthToken, messageBody, (err) => {

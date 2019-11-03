@@ -13,15 +13,25 @@
             <ul class="navbar-nav ml-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/message">Try Now</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/users/login">Login</a>
-                </li>
+                        <a class="nav-link" href="/message">Try Now!</a>
+                    </li>
+                    {{#if user}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/dashboard">View Dashboard</a>
+                    </li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="/users/signup">Sign Up</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/logout">Logout</a>
+                    </li>   
+                    {{else}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/login">Login</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/users/signup">Sign Up</a>
+                    </li>   
+                    {{/if}}
 
             </ul>
 

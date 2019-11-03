@@ -1,4 +1,5 @@
 const request = require("request");
+const translate = require('moji-translate');
 
 const sendMessage = (slackChannel, slackAuthToken, messageBody, callback) => {
 

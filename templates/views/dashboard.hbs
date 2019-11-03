@@ -1,0 +1,14 @@
+{{>header}}
+{{>nav}}
+
+<div class="container form-container">
+    <h1>Welcome, {{user.username}}</h1>
+    <div class="container form-container">
+        <h4>Message History</h4>
+        {{#each messages}}
+        <li class="list-group-item">{{this.messageBody}}</li>
+        {{/each}}
+    </div>
+</div>
+
+{{>footer}}

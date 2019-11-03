@@ -26,10 +26,7 @@ router.post('/users/signup', async (req, res) => {
         await user.save();
         const token = await user.generateAuthToken();
         res.cookie('auth_token', token)
-        res.status(201).send({
-            user,
-            token
-        })
+        res.redirect('/users/dashboard')
     } catch (e) {
         console.log(e)
         res.status(400).send(e)
@@ -41,24 +38,24 @@ router.post('/users/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken();
         res.cookie('auth_token', token)
-        res.send({
-            user,
-            token
-        })
+
+        res.redirect('/users/dashboard')
+
     } catch (e) {
-        res.status(400).send();
+        res.redirect('login')
     }
 })
 
-router.post('/users/logout', auth, async (req, res) => {
+router.get('/users/logout', auth, async (req, res) => {
 
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token;
         })
+        res.clearCookie('auth_token');
 
         await req.user.save();
-        res.send();
+        res.redirect('/')
     } catch (e) {
         res.statue(500).send();
     }
@@ -70,17 +67,22 @@ router.post('/users/logoutAll', auth, async (req, res) => {
         req.user.tokens = [];
 
         await req.user.save();
-        res.send();
+        res.redirect('/')
     } catch (e) {
         res.statue(500).send();
     }
 })
 
-router.get('/users/welcome', auth, async (req, res) => {
+router.get('/users/dashboard', auth, async (req, res) => {
 
     try {
         const messages = await Message.find({owner: req.user._id})
-        res.send(messages)
+
+        res.render('dashboard', {
+            messages,
+            user: req.user
+        });
+
     } catch (e) {
         res.status(500).send();
     }
