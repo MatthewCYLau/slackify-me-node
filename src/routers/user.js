@@ -3,15 +3,11 @@ const router = new express.Router();
 const User = require("../models/user");
 const auth = require("../middleware/auth");
 const Message = require("../models/message");
+const uploadImage = require("../utils/uploadImage");
 const multer = require("multer");
-const AWS = require("aws-sdk");
+const s3 = require("../aws/awsConfig");
 
-const BUCKET = "matlau-slackify-me";
-const REGION = "eu-west-2";
-const ACCESS_KEY = process.env.AWS_ACCESS_KEY;
-const SECRET_KEY = process.env.AWS_ACCESS_SECRET;
-
-const upload = multer();
+router.use("/", express.static(__dirname + "/public"));
 
 router.get("/users/signup", async (req, res) => {
   res.render("signup");
@@ -21,8 +17,11 @@ router.get("/users/login", async (req, res) => {
   res.render("login");
 });
 
-router.post("/users/signup", upload.single("avatar"), async (req, res) => {
+router.get("/users/upload", async (req, res) => {
+  res.render("upload");
+});
 
+router.post("/users/signup", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -97,37 +96,29 @@ router.get("/users/dashboard", auth, async (req, res) => {
   }
 });
 
+const upload = multer();
+
 //Upload avatar image from Postman to AWS S3
 router.post("/users/avatar", upload.single("avatar"), async (req, res) => {
 
   const imageRemoteName = `catImage_${new Date().getTime()}.png`;
+  const BUCKET = "matlau-slackify-me";
 
-  AWS.config.update({
-    accessKeyId: ACCESS_KEY,
-    secretAccessKey: SECRET_KEY,
-    region: REGION
-  });
+  const result = await uploadImage(req, imageRemoteName, BUCKET);
 
-  var s3 = new AWS.S3();
+  if (result && result.ETag) {
+    const imageURL = s3.getSignedUrl("getObject", {
+      Bucket: BUCKET,
+      Key: imageRemoteName
+    });
 
-  s3.putObject({
-    Bucket: BUCKET,
-    Body: req.file.buffer,
-    Key: imageRemoteName
-  })
-    .promise()
-    .then(response => {
-      console.log(`done! - `, response)
-      console.log(
-        `The URL is ${s3.getSignedUrl('getObject', { Bucket: BUCKET, Key: imageRemoteName })}`
-      )
-      res.status(200).send();
-    })
-    .catch(err => {
-      console.log('failed:', err)
-      res.status(500).send();
-    })
-  
+    console.log(imageURL)
+
+    res.status(200).send();
+  } else {
+    console.log("Failed to upload image");
+    res.status(500).send();
+  }
 });
 
 module.exports = router;
