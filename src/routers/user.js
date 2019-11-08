@@ -99,7 +99,7 @@ router.get("/users/dashboard", auth, async (req, res) => {
 const upload = multer();
 
 //Upload avatar image from Postman to AWS S3
-router.post("/users/avatar", upload.single("avatar"), async (req, res) => {
+router.post("/users/avatar", auth, upload.single("avatar"), async (req, res) => {
 
   const imageRemoteName = `catImage_${new Date().getTime()}.png`;
   const BUCKET = "matlau-slackify-me";
@@ -107,12 +107,15 @@ router.post("/users/avatar", upload.single("avatar"), async (req, res) => {
   const result = await uploadImage(req, imageRemoteName, BUCKET);
 
   if (result && result.ETag) {
-    const imageURL = s3.getSignedUrl("getObject", {
+    const avatarImageURL = (s3.getSignedUrl("getObject", {
       Bucket: BUCKET,
       Key: imageRemoteName
-    });
+    })).split('?')[0];
 
-    console.log(imageURL)
+    console.log(avatarImageURL)
+
+    req.user.avatarImageURL = avatarImageURL
+    await req.user.save()
 
     res.status(200).send();
   } else {
