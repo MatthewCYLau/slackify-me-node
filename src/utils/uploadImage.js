@@ -1,12 +1,12 @@
 const s3 = require("../aws/awsConfig");
 
-const uploadImage = async (req, imageRemoteName, bucket) => {
+const uploadImage = async (file, imageRemoteName, bucket) => {
 
   return s3
     .putObject({
       ACL: "public-read",
       Bucket: bucket,
-      Body: req.file.buffer,
+      Body: file,
       ContentType:'image/jpeg',
       Key: imageRemoteName
     })

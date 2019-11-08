@@ -7,6 +7,8 @@ const uploadImage = require("../utils/uploadImage");
 const multer = require("multer");
 const s3 = require("../aws/awsConfig");
 
+const upload = multer();
+
 router.use("/", express.static(__dirname + "/public"));
 
 router.get("/users/signup", async (req, res) => {
@@ -17,9 +19,39 @@ router.get("/users/login", async (req, res) => {
   res.render("login");
 });
 
-router.get("/users/upload", async (req, res) => {
+router.get("/users/upload", auth, async (req, res) => {
   res.render("upload");
 });
+
+router.post(
+  "/users/upload",
+  auth,
+
+  upload.single("avatar"),
+
+  async (req, res) => {
+    const imageRemoteName = `catImage_${new Date().getTime()}.png`;
+    const BUCKET = "matlau-slackify-me";
+
+    const result = await uploadImage(req.file.buffer, imageRemoteName, BUCKET);
+
+    if (result && result.ETag) {
+      const avatarImageURL = s3
+        .getSignedUrl("getObject", {
+          Bucket: BUCKET,
+          Key: imageRemoteName
+        })
+        .split("?")[0];
+
+      req.user.avatarImageURL = avatarImageURL;
+      await req.user.save();
+      res.redirect("/users/dashboard");
+    } else {
+      console.log("Failed to upload image");
+      res.status(500).send();
+    }
+  }
+);
 
 router.post("/users/signup", async (req, res) => {
   const username = req.body.username;
@@ -34,7 +66,7 @@ router.post("/users/signup", async (req, res) => {
     await user.save();
     const token = await user.generateAuthToken();
     res.cookie("auth_token", token);
-    res.redirect("/users/dashboard");
+    res.redirect("/users/upload");
   } catch (e) {
     console.log(e);
     res.status(400).send(e);
@@ -86,7 +118,6 @@ router.get("/users/dashboard", auth, async (req, res) => {
     const messages = await Message.find({
       owner: req.user._id
     });
-
     res.render("dashboard", {
       messages,
       user: req.user
@@ -96,32 +127,36 @@ router.get("/users/dashboard", auth, async (req, res) => {
   }
 });
 
-const upload = multer();
-
 //Upload avatar image from Postman to AWS S3
-router.post("/users/avatar", auth, upload.single("avatar"), async (req, res) => {
+router.post(
+  "/users/avatar",
+  auth,
+  upload.single("avatar"),
+  async (req, res) => {
+    const imageRemoteName = `catImage_${new Date().getTime()}.png`;
+    const BUCKET = "matlau-slackify-me";
 
-  const imageRemoteName = `catImage_${new Date().getTime()}.png`;
-  const BUCKET = "matlau-slackify-me";
+    const result = await uploadImage(req.file.buffer, imageRemoteName, BUCKET);
 
-  const result = await uploadImage(req, imageRemoteName, BUCKET);
+    if (result && result.ETag) {
+      const avatarImageURL = s3
+        .getSignedUrl("getObject", {
+          Bucket: BUCKET,
+          Key: imageRemoteName
+        })
+        .split("?")[0];
 
-  if (result && result.ETag) {
-    const avatarImageURL = (s3.getSignedUrl("getObject", {
-      Bucket: BUCKET,
-      Key: imageRemoteName
-    })).split('?')[0];
+      console.log(avatarImageURL);
 
-    console.log(avatarImageURL)
+      req.user.avatarImageURL = avatarImageURL;
+      await req.user.save();
 
-    req.user.avatarImageURL = avatarImageURL
-    await req.user.save()
-
-    res.status(200).send();
-  } else {
-    console.log("Failed to upload image");
-    res.status(500).send();
+      res.status(200).send();
+    } else {
+      console.log("Failed to upload image");
+      res.status(500).send();
+    }
   }
-});
+);
 
 module.exports = router;
