@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const config = require("config");
 
 const userSchema = new mongoose.Schema(
   {
@@ -59,7 +60,7 @@ userSchema.methods.generateAuthToken = async function() {
     {
       _id: user._id.toString()
     },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET || config.get("jwtSecret")
   );
   user.tokens = user.tokens.concat({
     token
